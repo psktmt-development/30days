@@ -1,4 +1,4 @@
-export type UserKey = "me" | "vinay" | "bhagwan" | "prasad";
+export type UserKey = "lasya" | "vinay" | "bhagwan" | "prasad";
 
 export interface Checkin {
   id: string;

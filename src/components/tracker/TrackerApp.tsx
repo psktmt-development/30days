@@ -1,56 +1,104 @@
+import { useState } from "react";
 import { getUserProgress } from "@/lib/progress";
 import { useCheckins } from "@/lib/useCheckins";
+import { PROFILES } from "@/lib/profiles";
 import { UserKey } from "@/lib/types";
 import { Header } from "../nav/Header";
 import { UserPanel } from "./UserPanel";
+import { IntroScreen } from "./IntroScreen";
+import { ProfileSelect } from "./ProfileSelect";
+import { ReactionPopup } from "./ReactionPopup";
 
-const USERS: { key: UserKey; label: string }[] = [
-  { key: "me", label: "Me" },
-  { key: "vinay", label: "Vinay" },
-  { key: "bhagwan", label: "Bhagwan" },
-  { key: "prasad", label: "Prasad" },
-];
+type View = "intro" | "select" | "tracker";
 
-export const TrackerApp = () => {
+interface Props {
+  yesImages: string[];
+  noImages: string[];
+}
+
+export const TrackerApp = ({ yesImages, noImages }: Props) => {
   const { checkins, loading, error, markToday } = useCheckins();
+  const [view, setView] = useState<View>("intro");
+  const [activeUser, setActiveUser] = useState<UserKey | null>(null);
+  const [reaction, setReaction] = useState<"clean" | "ate_out" | null>(null);
+
+  const profile = PROFILES.find((p) => p.key === activeUser);
+
+  const handleMark = async (ateOut: boolean) => {
+    if (!activeUser) return;
+    await markToday(activeUser, ateOut);
+    setReaction(ateOut ? "ate_out" : "clean");
+  };
+
+  const switchProfile = () => {
+    setActiveUser(null);
+    setView("select");
+  };
 
   return (
     <div>
-      <Header />
-      <main className="mx-auto max-w-5xl space-y-12 px-4 py-12 md:px-8">
-        <div>
-          <h1 className="text-4xl font-black text-zinc-100 sm:text-6xl">
-            No Eating Out<span className="text-indigo-500">.</span>
-          </h1>
-          <p className="mt-2 max-w-xl text-zinc-400">
-            30 days, four of us, zero excuses. Every 7 clean days in a row earns a dark
-            chocolate 🍫.
-          </p>
-        </div>
+      {view === "intro" && <IntroScreen onContinue={() => setView("select")} />}
 
-        {error && (
-          <div className="rounded-lg border border-rose-800 bg-rose-950/40 p-4 text-sm text-rose-300">
-            Couldn&apos;t reach Supabase: {error}. Make sure you&apos;ve run{" "}
-            <code>supabase/schema.sql</code> in your Supabase project and set the URL/anon
-            key in <code>.env.local</code>.
-          </div>
-        )}
+      {view === "select" && (
+        <ProfileSelect
+          profiles={PROFILES}
+          onSelect={(key) => {
+            setActiveUser(key);
+            setView("tracker");
+          }}
+        />
+      )}
 
-        {loading ? (
-          <p className="text-zinc-400">Loading...</p>
-        ) : (
-          <div className="grid gap-8 md:grid-cols-2">
-            {USERS.map((user) => (
+      {view === "tracker" && activeUser && profile && (
+        <>
+          <Header />
+          <main className="mx-auto max-w-2xl space-y-8 px-4 py-12 md:px-8">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-black text-zinc-100 sm:text-5xl">
+                  Yo, {profile.label}
+                  <span className="text-indigo-500">.</span>
+                </h1>
+                <p className="mt-2 text-zinc-400">
+                  Did you eat out today? Don&apos;t lie to the chocolate gods.
+                </p>
+              </div>
+              <button
+                className="shrink-0 text-sm text-zinc-500 underline hover:text-zinc-300"
+                onClick={switchProfile}
+              >
+                Switch profile
+              </button>
+            </div>
+
+            {error && (
+              <div className="rounded-lg border border-rose-800 bg-rose-950/40 p-4 text-sm text-rose-300">
+                Couldn&apos;t reach Supabase: {error}. Make sure you&apos;ve run the
+                migrations in <code>supabase/migrations</code> and set the URL/anon key in{" "}
+                <code>.env.local</code>.
+              </div>
+            )}
+
+            {loading ? (
+              <p className="text-zinc-400">Loading...</p>
+            ) : (
               <UserPanel
-                key={user.key}
-                label={user.label}
-                progress={getUserProgress(checkins, user.key)}
-                onMark={(ateOut) => markToday(user.key, ateOut)}
+                label={profile.label}
+                progress={getUserProgress(checkins, activeUser)}
+                onMark={handleMark}
               />
-            ))}
-          </div>
-        )}
-      </main>
+            )}
+          </main>
+        </>
+      )}
+
+      {reaction && (
+        <ReactionPopup
+          kind={reaction}
+          images={reaction === "clean" ? yesImages : noImages}
+          onClose={() => setReaction(null)}
+        />
+      )}
     </div>
   );
 };

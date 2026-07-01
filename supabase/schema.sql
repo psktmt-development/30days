@@ -2,7 +2,7 @@
 
 create table if not exists checkins (
   id uuid primary key default gen_random_uuid(),
-  user_key text not null check (user_key in ('me', 'vinay', 'bhagwan', 'prasad')),
+  user_key text not null check (user_key in ('lasya', 'vinay', 'bhagwan', 'prasad')),
   day date not null,
   ate_out boolean not null,
   created_at timestamptz not null default now(),
