@@ -36,4 +36,3 @@ per person over a 30-day challenge.
   check-ins, so only share the link between the two of you.
 - Data syncs live between devices via Supabase Realtime.
 - Styling uses Tailwind with the `indigo`/`zinc` palette.
-# 30days git init git add . git commit -m first commit git branch -M main git remote add origin https://github.com/psktmt-development/30days.git git push -u origin main
