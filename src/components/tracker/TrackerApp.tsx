@@ -7,6 +7,8 @@ import { UserPanel } from "./UserPanel";
 const USERS: { key: UserKey; label: string }[] = [
   { key: "me", label: "Me" },
   { key: "vinay", label: "Vinay" },
+  { key: "bhagwan", label: "Bhagwan" },
+  { key: "prasad", label: "Prasad" },
 ];
 
 export const TrackerApp = () => {
@@ -21,7 +23,7 @@ export const TrackerApp = () => {
             No Eating Out<span className="text-indigo-500">.</span>
           </h1>
           <p className="mt-2 max-w-xl text-zinc-400">
-            30 days, two of us, zero excuses. Every 7 clean days in a row earns a dark
+            30 days, four of us, zero excuses. Every 7 clean days in a row earns a dark
             chocolate 🍫.
           </p>
         </div>

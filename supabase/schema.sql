@@ -2,7 +2,7 @@
 
 create table if not exists checkins (
   id uuid primary key default gen_random_uuid(),
-  user_key text not null check (user_key in ('me', 'vinay')),
+  user_key text not null check (user_key in ('me', 'vinay', 'bhagwan', 'prasad')),
   day date not null,
   ate_out boolean not null,
   created_at timestamptz not null default now(),
@@ -11,9 +11,9 @@ create table if not exists checkins (
 
 alter table checkins enable row level security;
 
--- No auth/login for this 2-person app: the anon key can read and write freely.
+-- No auth/login for this app: the anon key can read and write freely.
 -- Anyone with the URL + anon key can see/edit check-ins, which is fine for a
--- private link shared only between the two of you, but don't post the link publicly.
+-- private link shared only between the four of you, but don't post the link publicly.
 create policy "anon can read checkins" on checkins
   for select using (true);
 
