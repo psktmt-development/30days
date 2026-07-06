@@ -38,16 +38,26 @@ export const useCheckins = () => {
     };
   }, [fetchAll]);
 
-  const markToday = useCallback(async (userKey: UserKey, ateOut: boolean) => {
-    const today = new Date().toISOString().slice(0, 10);
-    const { error } = await supabase
-      .from("checkins")
-      .upsert(
-        { user_key: userKey, day: today, ate_out: ateOut },
-        { onConflict: "user_key,day" }
-      );
-    if (error) setError(error.message);
-  }, []);
+  const markDay = useCallback(
+    async (userKey: UserKey, day: string, ateOut: boolean) => {
+      const { error } = await supabase
+        .from("checkins")
+        .upsert(
+          { user_key: userKey, day, ate_out: ateOut },
+          { onConflict: "user_key,day" }
+        );
+      if (error) setError(error.message);
+    },
+    []
+  );
 
-  return { checkins, loading, error, markToday };
+  const markToday = useCallback(
+    (userKey: UserKey, ateOut: boolean) => {
+      const today = new Date().toISOString().slice(0, 10);
+      return markDay(userKey, today, ateOut);
+    },
+    [markDay]
+  );
+
+  return { checkins, loading, error, markToday, markDay };
 };

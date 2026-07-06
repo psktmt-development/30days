@@ -1,4 +1,4 @@
-import { UserProgress } from "@/lib/progress";
+import { DayCell, UserProgress } from "@/lib/progress";
 import { OutlineButton } from "../buttons/OutlineButton";
 import { Chip } from "../util/Chip";
 import { Calendar } from "./Calendar";
@@ -7,9 +7,10 @@ interface Props {
   label: string;
   progress: UserProgress;
   onMark: (ateOut: boolean) => void;
+  onSelectDay?: (cell: DayCell) => void;
 }
 
-export const UserPanel = ({ label, progress, onMark }: Props) => {
+export const UserPanel = ({ label, progress, onMark, onSelectDay }: Props) => {
   const { startDate, daysElapsed, isComplete, cells, currentStreak, chocolates, todayStatus } =
     progress;
 
@@ -57,7 +58,16 @@ export const UserPanel = ({ label, progress, onMark }: Props) => {
         </div>
       )}
 
-      {cells.length > 0 && <Calendar cells={cells} />}
+      {cells.length > 0 && (
+        <>
+          <Calendar cells={cells} onSelect={onSelectDay} />
+          {onSelectDay && (
+            <p className="mt-2 text-xs text-zinc-500">
+              Missed a day or made a mistake? Click any past day to set or fix it.
+            </p>
+          )}
+        </>
+      )}
 
       {isComplete && (
         <p className="mt-4 text-sm font-semibold text-indigo-400">30 days complete! 🎉</p>

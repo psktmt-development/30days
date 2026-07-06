@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getUserProgress } from "@/lib/progress";
+import { DayCell, getUserProgress } from "@/lib/progress";
 import { useCheckins } from "@/lib/useCheckins";
 import { PROFILES } from "@/lib/profiles";
 import { UserKey } from "@/lib/types";
@@ -8,6 +8,7 @@ import { UserPanel } from "./UserPanel";
 import { IntroScreen } from "./IntroScreen";
 import { ProfileSelect } from "./ProfileSelect";
 import { ReactionPopup } from "./ReactionPopup";
+import { DayEditPopup } from "./DayEditPopup";
 
 type View = "intro" | "select" | "tracker";
 
@@ -17,10 +18,11 @@ interface Props {
 }
 
 export const TrackerApp = ({ yesImages, noImages }: Props) => {
-  const { checkins, loading, error, markToday } = useCheckins();
+  const { checkins, loading, error, markToday, markDay } = useCheckins();
   const [view, setView] = useState<View>("intro");
   const [activeUser, setActiveUser] = useState<UserKey | null>(null);
   const [reaction, setReaction] = useState<"clean" | "ate_out" | null>(null);
+  const [editingDay, setEditingDay] = useState<DayCell | null>(null);
 
   const profile = PROFILES.find((p) => p.key === activeUser);
 
@@ -28,6 +30,12 @@ export const TrackerApp = ({ yesImages, noImages }: Props) => {
     if (!activeUser) return;
     await markToday(activeUser, ateOut);
     setReaction(ateOut ? "ate_out" : "clean");
+  };
+
+  const handlePickDay = async (ateOut: boolean) => {
+    if (!activeUser || !editingDay) return;
+    await markDay(activeUser, editingDay.date, ateOut);
+    setEditingDay(null);
   };
 
   const switchProfile = () => {
@@ -86,6 +94,7 @@ export const TrackerApp = ({ yesImages, noImages }: Props) => {
                 label={profile.label}
                 progress={getUserProgress(checkins, activeUser)}
                 onMark={handleMark}
+                onSelectDay={setEditingDay}
               />
             )}
           </main>
@@ -97,6 +106,14 @@ export const TrackerApp = ({ yesImages, noImages }: Props) => {
           kind={reaction}
           images={reaction === "clean" ? yesImages : noImages}
           onClose={() => setReaction(null)}
+        />
+      )}
+
+      {editingDay && (
+        <DayEditPopup
+          cell={editingDay}
+          onPick={handlePickDay}
+          onClose={() => setEditingDay(null)}
         />
       )}
     </div>
